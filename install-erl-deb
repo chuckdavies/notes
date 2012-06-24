@@ -1,0 +1,23 @@
+# Steps to install erlang on standard debian
+
+1) add user to "sudoers" file
+   - edit /etc/sudoers
+   - add <user>  ALL=(ALL) ALL
+
+2) sudo apt-get install gcc
+
+3) sudo apt-get install libssl-dev
+
+4) wget http://www.erlang.org/download/otp_src_R15B01.tar.gz
+
+5) tar xz otp_src_R15B01.tar.gz
+
+6) cd otp_src_R15B01
+
+7) export LANG=C
+
+8) sudo ./configure
+
+9) sudo make
+
+10) sudo make install
