@@ -1,0 +1,78 @@
+# notes on how to configure a vbox based load balancer for riak nodes
+
+1) Create virtual box host network
+   - open vbox
+   - preferences
+   - network
+   - "add" host-only network (vboxnet0)
+     - accept default adapter/DHCP server settings
+        - IP range is 192.168.56.101 - 192.168.56.254
+   - running ifconfig on mac shows:
+     vboxnet0: flags=8843<UP,BROADCAST,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+	ether 0a:00:27:00:00:00 
+	inet 192.168.56.1 netmask 0xffffff00 broadcast 192.168.56.255
+
+2) Create VM for load balancer (lb-1)
+   - go to settings
+   - network
+     - adapter 1 (for internal network)
+       - attached to "host-only"
+       - name - "vboxnet0"
+
+     - adapter 2 (for external network)
+       - attached to "bridged adapter"
+   - install OS (debian 64-bit)
+
+3) Configure lb-1 (debian 64-bit)
+   - add user to "sudoers" file
+     - edit /etc/sudoers
+     - add <user>  ALL=(ALL) ALL
+   - configure eth0 (host-only network adapter)
+     - vi /etc/network/interfaces
+       - auto eth0
+       	 iface eth0 inet static
+	 address 192.168.56.10
+	 netmask 255.255.255.0
+     - ifup eth0
+
+   - install ssh server
+     - apt-get install ssh
+
+   - install haproxy
+     - wget http://haproxy.1wt.eu/download/1.4/src/haproxy-1.4.14.tar.gz
+     - tar xzf haproxy-1.4.14.tar.gz
+     - cd haproxy*
+     - apt-get install make
+     - apt-get install gcc
+     - make TARGET=linux26
+     - make install
+
+4) Create riak VM's (rn-1,rn-2,etc...)
+   - configure rn-1 (debian 64-bit)
+     - install ssh server
+       - apt-get install ssh
+
+     - vi /etc/network/interfaces
+        auto eth0
+        iface eth0 inet static
+	address 192.168.56.11
+	netmask 255.255.255.0
+
+	allow-hotplug eth1
+	iface eth1 inet dhcp
+     
+     - install riak:
+       - dpkg -i riak*.deb (has erts)
+
+     - restart VM
+       
+   - configure rn-* (additional riak node)
+     - clone rn-1
+     - vi /etc/hostname
+       - change hostname
+     - vi /etc/hosts
+       - change hostname
+     - vi /etc/network/interfaces
+       - change ip address of eth0
+     - rm /etc/udev/rules.d/70-persistent-net.rules
+     - restart VM
