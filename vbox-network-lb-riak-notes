@@ -63,7 +63,15 @@
      
      - install riak:
        - dpkg -i riak*.deb (has erts)
-
+       - execute "riak stop"
+       - edit /etc/riak/vm.args
+          - change "-name riak@127.0.0.1" to "-name riak@192.168.56.11"
+       - edit /etc/riak/app.config
+          - change "{http, [ {"127.0.0.1", 8098 } ]}," to "{http, [ {"192.168.56.11", 8098 } ]},"
+	  - change "{pb_ip,   "127.0.0.1" }," to "{pb_ip,   "192.168.56.11" },"
+       - exectue "riak-admin reip 127.0.0.1 192.168.56.11"
+       - execute "riak start"
+       - should now be able to "curl 192.168.56.11:8098/riak" from outside the node     
      - restart VM
        
    - configure rn-* (additional riak node)
@@ -75,4 +83,14 @@
      - vi /etc/network/interfaces
        - change ip address of eth0
      - rm /etc/udev/rules.d/70-persistent-net.rules
+     - execute "riak stop"
+     - edit /etc/riak/vm.args
+          - change "-name riak@127.0.0.1" to "-name riak@192.168.56.N"
+       - edit /etc/riak/app.config
+          - change "{http, [ {"127.0.0.1", 8098 } ]}," to "{http, [ {"192.168.56.N", 8098 } ]},"
+	  - change "{pb_ip,   "127.0.0.1" }," to "{pb_ip,   "192.168.56.N" },"
+       - execute "riak stop"
+       - exectue "riak-admin reip 127.0.0.1 192.168.56.N"
+       - execute "riak start"
+       - should now be able to "curl 192.168.56.N:8098/riak" from outside the node     
      - restart VM
